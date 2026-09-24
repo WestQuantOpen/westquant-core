@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://westquant.org/schema/repgraph/0.2",
+  "title": "WestQuant Representation Graph v0.2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "graph_id",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.2"
+    },
+    "graph_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "https://westquant.org/schema/wqir/0.2"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "input_id",
+          "output_id",
+          "transform_id",
+          "transform_version",
+          "equivalence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "transform_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "transform_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "equivalence": {
+            "enum": [
+              "exact",
+              "objective_equivalent",
+              "ground_state_equivalent",
+              "same_problem_different_dynamics",
+              "approximate",
+              "unknown",
+              "invalid"
+            ]
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "verification": {
+            "type": "object"
+          },
+          "outcome": {
+            "type": "object"
+          },
+          "metrics_before": {
+            "type": "object"
+          },
+          "metrics_after": {
+            "type": "object"
+          },
+          "framework": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cost": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
