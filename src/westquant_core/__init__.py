@@ -32,11 +32,11 @@ __all__ = [
     "WestQuantPlugin",
 ]
 
-from .search import Action, Evaluation, Objective, PolicyState, BeamSearchResult, DeterministicBeamSearch, pareto_front, pareto_dominates, metric_delta
+from .search import Action, Evaluation, Objective, PolicyState, BeamSearchResult, DeterministicBeamSearch, pareto_front, pareto_dominates, metric_delta, state_id
 from .registry import TransformationRegistry, TransformationSpec
 from .dataset import DatasetManifest, write_jsonl, read_jsonl
 
-__all__ += ["Action", "Evaluation", "Objective", "PolicyState", "BeamSearchResult", "DeterministicBeamSearch", "pareto_front", "pareto_dominates", "metric_delta", "TransformationRegistry", "TransformationSpec", "DatasetManifest", "write_jsonl", "read_jsonl"]
+__all__ += ["Action", "Evaluation", "Objective", "PolicyState", "BeamSearchResult", "DeterministicBeamSearch", "pareto_front", "pareto_dominates", "metric_delta", "state_id", "TransformationRegistry", "TransformationSpec", "DatasetManifest", "write_jsonl", "read_jsonl"]
 
 from .validation import validate_policy_record
 __all__ += ["validate_policy_record"]
