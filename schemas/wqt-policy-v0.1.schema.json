@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://westquant.open/schemas/wqt-policy-v0.1.schema.json",
+  "title": "WestQuant WQT Policy Record v0.1",
+  "type": "object",
+  "required": [
+    "schema_version", "framework", "challenge_id", "state_id", "next_state_id",
+    "step_index", "stage", "action", "success", "selectable", "verification",
+    "metrics_before", "metrics_after", "kept_in_beam", "terminal"
+  ],
+  "properties": {
+    "schema_version": {"const": "wqt-policy-v0.1"},
+    "framework": {"type": "string", "minLength": 1},
+    "challenge_id": {"type": "string", "minLength": 1},
+    "state_id": {"type": "string", "minLength": 1},
+    "next_state_id": {"type": "string", "minLength": 1},
+    "step_index": {"type": "integer", "minimum": 0},
+    "stage": {"type": "string", "minLength": 1},
+    "action": {
+      "type": "object",
+      "required": ["stage", "name", "parameters"],
+      "properties": {
+        "id": {"type": "string"},
+        "stage": {"type": "string"},
+        "name": {"type": "string"},
+        "parameters": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "context": {"type": "object"},
+    "success": {"type": "boolean"},
+    "selectable": {"type": "boolean"},
+    "verification": {"type": "object"},
+    "metrics_before": {"type": "object"},
+    "metrics_after": {"type": "object"},
+    "reward_vector": {"type": "object"},
+    "cost": {"type": "object"},
+    "kept_in_beam": {"type": "boolean"},
+    "terminal": {"type": "boolean"},
+    "error": {"type": ["object", "string", "null"]},
+    "outcome_class": {"type": "string"}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://westquant.org/schema/wqir/0.2",
+  "title": "WestQuant Intermediate Representation v0.2",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "schema_version",
+    "payload"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "problem",
+        "operator",
+        "circuit",
+        "layout",
+        "control",
+        "hardware",
+        "execution",
+        "evaluation"
+      ]
+    },
+    "schema_version": {
+      "const": "0.2"
+    },
+    "semantic_root": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "framework": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}
