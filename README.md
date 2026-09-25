@@ -18,3 +18,10 @@ Framework-neutral substrate for WestQuant Open representation search.
 WQT20 is intentionally not a runtime dependency. Deterministic and heuristic
 search remain fully usable without a learned model, giving a clean baseline for
 future WQT20 comparisons.
+
+## License
+
+westquant-core is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](LICENSE).
+MPL-2.0 applies file-level copyleft: modifications to MPL-licensed files must be
+shared back under MPL-2.0, while proprietary software built on top of the core
+may remain closed.

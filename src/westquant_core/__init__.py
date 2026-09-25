@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 from .model import (
     EquivalenceKind,
     Representation,
@@ -41,4 +45,4 @@ __all__ += ["Action", "Evaluation", "Objective", "PolicyState", "BeamSearchResul
 from .validation import validate_policy_record
 __all__ += ["validate_policy_record"]
 
-__version__ = "0.2.0a2"
+__version__ = "0.2.0a3"
