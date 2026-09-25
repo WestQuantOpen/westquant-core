@@ -269,3 +269,173 @@ class DeterministicBeamSearch:
         # Stable deterministic tie-breaker based on prefix action ids.
         tie = int(hashlib.sha256("|".join(a.id for a in state.prefix).encode()).hexdigest()[:12], 16)
         return (exact_penalty, *vals, float(tie))
+
+
+@dataclass
+class UnifiedSearchResult:
+    """Framework-agnostic search result interface."""
+    challenge_id: str
+    best_metrics: dict[str, MetricValue] | None
+    best_config: dict[str, Any] | None
+    best_circuit: Any | None = None
+    n_candidates: int = 0
+    n_compile_success: int = 0
+    n_verified: int = 0
+    n_pareto: int = 0
+    framework: str = ""
+
+    @staticmethod
+    def from_qiskit(result: Any) -> "UnifiedSearchResult":
+        """Adapt a Qiskit SearchResult to unified interface."""
+        best = result.best
+        return UnifiedSearchResult(
+            challenge_id=result.challenge_id,
+            best_metrics=best.metrics if best else None,
+            best_config=best.config.to_dict() if best else None,
+            n_candidates=len(result.candidates),
+            n_compile_success=sum(c.compile_success for c in result.candidates),
+            n_verified=sum(bool(c.verification and c.verification.verified) for c in result.candidates),
+            n_pareto=len(result.pareto_front),
+            framework="qiskit",
+        )
+
+    @staticmethod
+    def from_pytket(result: Any) -> "UnifiedSearchResult":
+        """Adapt a pytket BeamSearchResult to unified interface."""
+        best = result.best
+        return UnifiedSearchResult(
+            challenge_id=result.challenge_id,
+            best_metrics=best.evaluation.metrics if best and best.evaluation else None,
+            best_config=None,
+            n_candidates=len(result.states),
+            n_compile_success=sum(bool(s.evaluation and s.evaluation.success) for s in result.states if s.parent_state_id),
+            n_verified=0,
+            n_pareto=0,
+            framework="pytket",
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "challenge_id": self.challenge_id,
+            "framework": self.framework,
+            "best_metrics": self.best_metrics,
+            "best_config": self.best_config,
+            "n_candidates": self.n_candidates,
+            "n_compile_success": self.n_compile_success,
+            "n_verified": self.n_verified,
+            "n_pareto": self.n_pareto,
+        }
+
+
+def _within(a: MetricValue, b: MetricValue, tol: float) -> bool:
+    if a is None or b is None:
+        return a is None and b is None
+    return abs(float(a) - float(b)) <= tol
+
+
+def cluster_representations(
+    items: Sequence[Any], metrics: Callable[[Any], dict[str, MetricValue]], tolerance: float = 0.0
+) -> list[list[Any]]:
+    """Group items by metric similarity within tolerance.
+
+    Items are in the same cluster if all metric values are within tolerance
+    of each other.
+    """
+    if not items:
+        return []
+    clusters: list[list[Any]] = []
+    for item in items:
+        mi = metrics(item)
+        placed = False
+        for cluster in clusters:
+            m0 = metrics(cluster[0])
+            if all(_within(mi.get(k), m0.get(k), tolerance) for k in set(mi) | set(m0)):
+                cluster.append(item)
+                placed = True
+                break
+        if not placed:
+            clusters.append([item])
+    return clusters
+
+
+def score_representations(
+    items: Sequence[Any], metrics: Callable[[Any], dict[str, MetricValue]], weights: dict[str, float]
+) -> list[tuple[float, Any]]:
+    """Score items by weighted sum of normalized metrics.
+
+    Returns list of (score, item) sorted by score ascending (lower is better).
+    """
+    scored = []
+    for item in items:
+        mi = metrics(item)
+        score = 0.0
+        for name, weight in weights.items():
+            val = mi.get(name)
+            if val is not None:
+                score += weight * float(val)
+        scored.append((score, item))
+    scored.sort(key=lambda x: x[0])
+    return scored
+
+
+def hypervolume(
+    pareto_items: Sequence[Any],
+    metrics: Callable[[Any], dict[str, MetricValue]],
+    objectives: Sequence[Objective],
+    reference: dict[str, MetricValue] | None = None,
+) -> float:
+    """Compute hypervolume of Pareto front.
+
+    Uses a simple recursive algorithm for 2D, Monte Carlo for higher dims.
+    """
+    if not pareto_items:
+        return 0.0
+    if len(objectives) == 2:
+        return _hypervolume_2d(pareto_items, metrics, objectives, reference)
+    # Monte Carlo for higher dimensions
+    return _hypervolume_mc(pareto_items, metrics, objectives, reference)
+
+
+def _hypervolume_2d(items, metrics, objectives, reference):
+    import random
+    pts = []
+    for item in items:
+        mi = metrics(item)
+        pts.append(tuple(obj.normalize(mi.get(obj.name)) for obj in objectives))
+    if not pts:
+        return 0.0
+    ref = reference or {}
+    ref_pt = tuple(obj.normalize(ref.get(obj.name, 0.0)) for obj in objectives)
+    pts.sort()
+    hv = 0.0
+    prev = ref_pt[1]
+    for x, y in pts:
+        if y < prev:
+            hv += (x - ref_pt[0]) * (prev - y)
+            prev = y
+    return hv
+
+
+def _hypervolume_mc(items, metrics, objectives, reference, n_samples=10000):
+    import random
+    random.seed(42)
+    pts = []
+    for item in items:
+        mi = metrics(item)
+        pts.append(tuple(obj.normalize(mi.get(obj.name)) for obj in objectives))
+    if not pts:
+        return 0.0
+    ref = reference or {}
+    ref_pt = tuple(obj.normalize(ref.get(obj.name, 0.0)) for obj in objectives)
+    mins = [min(p[i] for p in pts) for i in range(len(objectives))]
+    maxs = [max(p[i] for p in pts) for i in range(len(objectives))]
+    count = 0
+    for _ in range(n_samples):
+        sample = tuple(random.uniform(mins[i], maxs[i]) for i in range(len(objectives)))
+        dominated = all(all(s <= p[i] for i, p in enumerate(pts)) for s in [sample])
+        if dominated:
+            count += 1
+    vol = 1.0
+    for i in range(len(objectives)):
+        vol *= (maxs[i] - mins[i])
+    return vol * count / n_samples
