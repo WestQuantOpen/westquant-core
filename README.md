@@ -25,3 +25,9 @@ westquant-core is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](LICE
 MPL-2.0 applies file-level copyleft: modifications to MPL-licensed files must be
 shared back under MPL-2.0, while proprietary software built on top of the core
 may remain closed.
+
+## CUDA-Q integration
+
+Version 0.2.1 adds the framework-neutral `ExecutionHint` contract used by
+`westquant-cudaq` to carry backend family, simulator engine, precision,
+GPU/QPU allocation, shot budgets, and execution constraints through WQIR.

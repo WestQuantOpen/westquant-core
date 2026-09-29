@@ -1,5 +1,6 @@
 from westquant_core import (
     EquivalenceKind,
+    ExecutionHint,
     RepGraph,
     Representation,
     RepresentationKind,
@@ -52,3 +53,8 @@ def test_repgraph_rejects_cycle():
         assert "acyclic" in str(exc)
     else:
         raise AssertionError("cycle was accepted")
+
+
+def test_execution_hint_roundtrip():
+    hint = ExecutionHint("cuda-q", "tensor_network", gpu_count=2, constraints={"max_memory_bytes": 1024})
+    assert ExecutionHint.from_dict(hint.to_dict()) == hint

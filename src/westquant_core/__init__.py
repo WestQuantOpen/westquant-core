@@ -4,6 +4,7 @@
 
 from .model import (
     EquivalenceKind,
+    ExecutionHint,
     Representation,
     RepresentationKind,
     TransformationRecord,
@@ -22,6 +23,7 @@ from .plugin import (
 
 __all__ = [
     "EquivalenceKind",
+    "ExecutionHint",
     "Representation",
     "RepresentationKind",
     "TransformationRecord",
@@ -45,4 +47,4 @@ __all__ += ["Action", "Evaluation", "Objective", "PolicyState", "BeamSearchResul
 from .validation import validate_policy_record
 __all__ += ["validate_policy_record"]
 
-__version__ = "0.2.0a3"
+__version__ = "0.2.1"

@@ -75,6 +75,43 @@ class Representation:
 
 
 @dataclass(frozen=True)
+class ExecutionHint:
+    backend_family: str
+    engine: str
+    precision: str = "fp64"
+    gpu_count: int = 0
+    qpu_jobs: int = 0
+    shots: int = 0
+    constraints: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "backend_family": self.backend_family,
+            "engine": self.engine,
+            "precision": self.precision,
+            "gpu_count": self.gpu_count,
+            "qpu_jobs": self.qpu_jobs,
+            "shots": self.shots,
+            "constraints": self.constraints,
+            "metadata": self.metadata,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ExecutionHint":
+        return cls(
+            backend_family=str(data["backend_family"]),
+            engine=str(data["engine"]),
+            precision=str(data.get("precision", "fp64")),
+            gpu_count=int(data.get("gpu_count", 0)),
+            qpu_jobs=int(data.get("qpu_jobs", 0)),
+            shots=int(data.get("shots", 0)),
+            constraints=dict(data.get("constraints", {})),
+            metadata=dict(data.get("metadata", {})),
+        )
+
+
+@dataclass(frozen=True)
 class TransformationRecord:
     id: str
     input_id: str
